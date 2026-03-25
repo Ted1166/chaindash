@@ -1,0 +1,1 @@
+{"root":["./src/App.tsx","./src/main.tsx","./src/ai/client.ts","./src/chain/contracts.ts","./src/components/GameOver.tsx","./src/components/Leaderboard.tsx","./src/components/WalletConnect.tsx","./src/game/GameCanvas.tsx","./src/game/scenes/BootScene.ts","./src/game/scenes/GameScene.ts","./src/game/scenes/UIScene.ts","./src/hooks/useGameStore.ts"],"version":"5.9.3"}

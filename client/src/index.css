@@ -1,0 +1,139 @@
+:root {
+  --color-bg: #0f0f1a;
+  --color-surface: #16162a;
+  --color-border: rgba(127, 119, 221, 0.15);
+  --color-text: #eeedfe;
+  --color-text-muted: #9390c0;
+  --color-purple: #7f77dd;
+  --color-teal: #1d9e75;
+  --color-amber: #ef9f27;
+  --color-red: #e24b4a;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: var(--color-bg);
+  color: var(--color-text);
+  min-height: 100dvh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#root {
+  width: 100%;
+  max-width: 520px;
+  padding: 1rem;
+}
+
+/* ── Screens ──────────────────────────────────────────────────────────────── */
+.screen {
+  width: 100%;
+}
+
+.screen--connect,
+.screen--home {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 3rem 1rem;
+  text-align: center;
+}
+
+/* ── Logo ─────────────────────────────────────────────────────────────────── */
+.logo {
+  font-size: 42px;
+  font-weight: 700;
+  letter-spacing: -1px;
+  line-height: 1;
+}
+
+.logo__chain { color: var(--color-text); }
+.logo__dash  { color: var(--color-purple); }
+.logo__ai    { color: var(--color-teal); font-size: 28px; }
+
+.tagline {
+  font-size: 15px;
+  color: var(--color-text-muted);
+  max-width: 300px;
+  line-height: 1.5;
+}
+
+/* ── Home actions ─────────────────────────────────────────────────────────── */
+.home-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+  max-width: 280px;
+}
+
+/* ── Buttons ──────────────────────────────────────────────────────────────── */
+button {
+  cursor: pointer;
+  border: none;
+  outline: none;
+  font-family: inherit;
+  transition: opacity 0.15s, transform 0.1s;
+}
+
+button:active {
+  transform: scale(0.98);
+}
+
+.btn {
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 500;
+  width: 100%;
+  text-align: center;
+}
+
+.btn--primary {
+  background: var(--color-purple);
+  color: #fff;
+}
+
+.btn--primary:hover {
+  opacity: 0.88;
+}
+
+.btn--secondary {
+  background: transparent;
+  border: 0.5px solid var(--color-purple);
+  color: var(--color-purple);
+}
+
+.btn--secondary:hover {
+  background: rgba(127, 119, 221, 0.1);
+}
+
+.btn--ghost {
+  background: transparent;
+  color: var(--color-text-muted);
+  font-size: 13px;
+}
+
+.btn--ghost:hover {
+  color: var(--color-text);
+}
+
+/* ── dApp-kit connect button override ─────────────────────────────────────── */
+[data-dapp-kit] button {
+  background: var(--color-purple) !important;
+  border-radius: 8px !important;
+  font-family: inherit !important;
+  font-size: 15px !important;
+  font-weight: 500 !important;
+  padding: 12px 24px !important;
+  color: #fff !important;
+  border: none !important;
+}
