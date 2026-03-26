@@ -1,115 +1,111 @@
 import Phaser from 'phaser'
 
-export class BootScene extends Phaser.Scene {
-  constructor() {
-    super({ key: 'BootScene' })
-  }
+export default class BootScene extends Phaser.Scene {
+  constructor() { super({ key: 'BootScene' }) }
 
   preload() {
-    // Generate all graphics procedurally — no external asset files needed for MVP.
-    // This keeps the demo completely self-contained.
-    this.createPlayerTexture()
-    this.createObstacleTextures()
-    this.createTokenTexture()
-    this.createGroundTexture()
-    this.createBackgroundTexture()
+    const { width, height } = this.scale
+    const bar = this.add.graphics()
+
+    this.load.on('progress', (v: number) => {
+      bar.clear()
+      bar.fillStyle(0x00c2ff, 1)
+      bar.fillRect(width / 2 - 120, height / 2, 240 * v, 4)
+    })
+
+    this.generateTextures()
+  }
+
+  private generateTextures() {
+    const player = this.make.graphics({ x: 0, y: 0 })
+    player.fillStyle(0x5b8dd9)
+    player.fillRoundedRect(0, 0, 32, 40, 6)
+    player.fillStyle(0x00c2ff)
+    player.fillRoundedRect(6, 8, 20, 12, 3)
+
+    player.fillStyle(0xffffff, 0.4)
+    player.fillRoundedRect(8, 10, 8, 4, 2)
+    player.fillStyle(0x3a5fa8)
+    player.fillRect(6, 34, 8, 8)
+    player.fillRect(18, 34, 8, 8)
+    player.generateTexture('player', 32, 44)
+    player.destroy()
+
+    const ground = this.make.graphics({ x: 0, y: 0 })
+    ground.fillStyle(0x1a2a3a)
+    ground.fillRect(0, 0, 64, 32)
+    ground.fillStyle(0x00c2ff, 0.15)
+    ground.fillRect(0, 0, 64, 2)
+    ground.fillStyle(0x0d1a28)
+    ground.fillRect(0, 2, 64, 30)
+    ground.fillStyle(0x00c2ff, 0.08)
+    ground.fillRect(8, 8, 48, 1)
+    ground.fillRect(8, 16, 48, 1)
+    ground.fillRect(8, 24, 48, 1)
+    ground.generateTexture('ground', 64, 32)
+    ground.destroy()
+
+    const spike = this.make.graphics({ x: 0, y: 0 })
+    spike.fillStyle(0xff3355)
+    spike.fillRect(0, 0, 28, 56)
+    spike.fillStyle(0xff6677, 0.6)
+    spike.fillRect(2, 2, 10, 52)
+    spike.fillStyle(0xff0033)
+    spike.fillRect(0, 0, 28, 4)
+    
+    const spikeText = this.add.text(14, 28, '⚡', {
+      fontSize: '18px', color: '#ffff00'
+    }).setOrigin(0.5).setVisible(false)
+    spike.generateTexture('obstacle_spike', 28, 56)
+    spike.destroy()
+    spikeText.destroy()
+
+    const rug = this.make.graphics({ x: 0, y: 0 })
+    rug.fillStyle(0xff8800)
+    rug.fillRect(0, 0, 40, 20)
+    rug.fillStyle(0xffaa00, 0.5)
+    rug.fillRect(2, 2, 36, 8)
+    rug.generateTexture('obstacle_rug', 40, 20)
+    rug.destroy()
+
+    const fork = this.make.graphics({ x: 0, y: 0 })
+    fork.fillStyle(0xaa44ff)
+    fork.fillRect(14, 0, 12, 48)
+    fork.fillRect(0, 0, 12, 24)
+    fork.fillRect(28, 0, 12, 24)
+    fork.fillStyle(0xcc88ff, 0.4)
+    fork.fillRect(15, 2, 5, 44)
+    fork.generateTexture('obstacle_fork', 40, 48)
+    fork.destroy()
+
+    const token = this.make.graphics({ x: 0, y: 0 })
+    token.fillStyle(0xffaa00)
+    token.fillCircle(12, 12, 12)
+    token.fillStyle(0xffcc44)
+    token.fillCircle(12, 12, 9)
+    token.fillStyle(0xffaa00)
+    token.fillCircle(12, 12, 6)
+    token.fillStyle(0xffe066, 0.8)
+    token.fillCircle(9, 9, 3)
+    token.generateTexture('token', 24, 24)
+    token.destroy()
+
+    const shield = this.make.graphics({ x: 0, y: 0 })
+    shield.fillStyle(0x00c2ff, 0.8)
+    shield.fillRoundedRect(0, 0, 24, 28, 4)
+    shield.fillStyle(0x44ddff)
+    shield.fillRoundedRect(4, 4, 16, 12, 2)
+    shield.generateTexture('shield', 24, 28)
+    shield.destroy()
+
+    const particle = this.make.graphics({ x: 0, y: 0 })
+    particle.fillStyle(0xffffff)
+    particle.fillCircle(4, 4, 4)
+    particle.generateTexture('particle', 8, 8)
+    particle.destroy()
   }
 
   create() {
     this.scene.start('GameScene')
-  }
-
-  // ── Procedural texture generators ────────────────────────────────────────────
-
-  private createPlayerTexture() {
-    const g = this.make.graphics({ x: 0, y: 0 })
-    // Body
-    g.fillStyle(0x7f77dd)
-    g.fillRoundedRect(4, 8, 28, 28, 6)
-    // Visor
-    g.fillStyle(0xcecbf6)
-    g.fillRoundedRect(8, 12, 16, 10, 3)
-    // Legs
-    g.fillStyle(0x534ab7)
-    g.fillRect(8, 34, 8, 10)
-    g.fillRect(20, 34, 8, 10)
-    g.generateTexture('player', 36, 48)
-    g.destroy()
-  }
-
-  private createObstacleTextures() {
-    // Gas spike — red spike
-    const spike = this.make.graphics({ x: 0, y: 0 })
-    spike.fillStyle(0xe24b4a)
-    spike.fillTriangle(20, 0, 40, 60, 0, 60)
-    spike.fillStyle(0xf09595)
-    spike.fillTriangle(20, 8, 34, 60, 6, 60)
-    spike.generateTexture('obstacle_spike', 40, 60)
-    spike.destroy()
-
-    // Fork bomb — yellow split
-    const fork = this.make.graphics({ x: 0, y: 0 })
-    fork.fillStyle(0xef9f27)
-    fork.fillRoundedRect(0, 20, 50, 20, 4)
-    fork.fillStyle(0xfac775)
-    fork.fillTriangle(0, 20, 25, 0, 50, 20)
-    fork.generateTexture('obstacle_fork', 50, 40)
-    fork.destroy()
-
-    // Rug pull — floor tile that disappears
-    const rug = this.make.graphics({ x: 0, y: 0 })
-    rug.fillStyle(0x378add)
-    rug.fillRoundedRect(0, 0, 80, 18, 4)
-    rug.lineStyle(1, 0x85b7eb)
-    rug.strokeRoundedRect(0, 0, 80, 18, 4)
-    rug.generateTexture('obstacle_rug', 80, 18)
-    rug.destroy()
-
-    // Validator node — big bouncer
-    const node = this.make.graphics({ x: 0, y: 0 })
-    node.fillStyle(0x1d9e75)
-    node.fillCircle(24, 24, 24)
-    node.fillStyle(0x9fe1cb)
-    node.fillCircle(24, 18, 10)
-    node.generateTexture('obstacle_node', 48, 48)
-    node.destroy()
-  }
-
-  private createTokenTexture() {
-    const g = this.make.graphics({ x: 0, y: 0 })
-    g.fillStyle(0xef9f27)
-    g.fillCircle(12, 12, 12)
-    g.fillStyle(0xfac775)
-    g.fillCircle(12, 10, 7)
-    g.generateTexture('token', 24, 24)
-    g.destroy()
-  }
-
-  private createGroundTexture() {
-    const g = this.make.graphics({ x: 0, y: 0 })
-    g.fillStyle(0x26215c)
-    g.fillRect(0, 0, 480, 20)
-    g.lineStyle(1, 0x534ab7)
-    g.lineBetween(0, 0, 480, 0)
-    g.generateTexture('ground', 480, 20)
-    g.destroy()
-  }
-
-  private createBackgroundTexture() {
-    const g = this.make.graphics({ x: 0, y: 0 })
-    // Deep space gradient simulation using layered rects
-    g.fillStyle(0x0f0f1a)
-    g.fillRect(0, 0, 480, 640)
-    // Grid lines (blockchain theme)
-    g.lineStyle(0.5, 0x26215c, 0.4)
-    for (let x = 0; x < 480; x += 40) g.lineBetween(x, 0, x, 640)
-    for (let y = 0; y < 640; y += 40) g.lineBetween(0, y, 480, y)
-    // Stars
-    g.fillStyle(0xffffff, 0.6)
-    for (let i = 0; i < 60; i++) {
-      g.fillRect(Math.random() * 480, Math.random() * 640, 1, 1)
-    }
-    g.generateTexture('bg', 480, 640)
-    g.destroy()
   }
 }

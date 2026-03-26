@@ -1,139 +1,89 @@
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&family=Inter:wght@300;400;500&display=swap');
+
 :root {
-  --color-bg: #0f0f1a;
-  --color-surface: #16162a;
-  --color-border: rgba(127, 119, 221, 0.15);
-  --color-text: #eeedfe;
-  --color-text-muted: #9390c0;
-  --color-purple: #7f77dd;
-  --color-teal: #1d9e75;
-  --color-amber: #ef9f27;
-  --color-red: #e24b4a;
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  --bg-deep:     #020408;
+  --bg-panel:    #080d14;
+  --bg-card:     #0d1520;
+  --border:      #1a2a3a;
+  --border-glow: #00c2ff40;
+  --accent:      #00c2ff;
+  --accent-dim:  #0077aa;
+  --accent-glow: #00c2ff20;
+  --green:       #00ff88;
+  --green-dim:   #00aa55;
+  --amber:       #ffaa00;
+  --red:         #ff3355;
+  --text-1:      #e8f4ff;
+  --text-2:      #7a9ab8;
+  --text-3:      #3a5570;
+  --font-head:   'Orbitron', monospace;
+  --font-mono:   'Share Tech Mono', monospace;
+  --font-body:   'Inter', sans-serif;
 }
 
-*, *::before, *::after {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-body {
-  background: var(--color-bg);
-  color: var(--color-text);
-  min-height: 100dvh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-#root {
+html, body, #root {
   width: 100%;
-  max-width: 520px;
-  padding: 1rem;
+  height: 100%;
+  background: var(--bg-deep);
+  color: var(--text-1);
+  font-family: var(--font-body);
+  overflow: hidden;
 }
 
-/* ── Screens ──────────────────────────────────────────────────────────────── */
-.screen {
-  width: 100%;
+/* Scanline overlay */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0, 194, 255, 0.015) 2px,
+    rgba(0, 194, 255, 0.015) 4px
+  );
+  pointer-events: none;
+  z-index: 9999;
 }
 
-.screen--connect,
-.screen--home {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 1.5rem;
-  padding: 3rem 1rem;
-  text-align: center;
-}
-
-/* ── Logo ─────────────────────────────────────────────────────────────────── */
-.logo {
-  font-size: 42px;
-  font-weight: 700;
-  letter-spacing: -1px;
-  line-height: 1;
-}
-
-.logo__chain { color: var(--color-text); }
-.logo__dash  { color: var(--color-purple); }
-.logo__ai    { color: var(--color-teal); font-size: 28px; }
-
-.tagline {
-  font-size: 15px;
-  color: var(--color-text-muted);
-  max-width: 300px;
-  line-height: 1.5;
-}
-
-/* ── Home actions ─────────────────────────────────────────────────────────── */
-.home-actions {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  width: 100%;
-  max-width: 280px;
-}
-
-/* ── Buttons ──────────────────────────────────────────────────────────────── */
 button {
   cursor: pointer;
   border: none;
   outline: none;
-  font-family: inherit;
-  transition: opacity 0.15s, transform 0.1s;
+  font-family: var(--font-head);
 }
 
-button:active {
-  transform: scale(0.98);
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: var(--bg-panel); }
+::-webkit-scrollbar-thumb { background: var(--accent-dim); border-radius: 2px; }
+
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 8px var(--accent-glow); }
+  50%       { box-shadow: 0 0 24px var(--border-glow); }
 }
 
-.btn {
-  padding: 12px 20px;
-  border-radius: 8px;
-  font-size: 15px;
-  font-weight: 500;
-  width: 100%;
-  text-align: center;
+@keyframes flicker {
+  0%, 100% { opacity: 1; }
+  92%       { opacity: 1; }
+  93%       { opacity: 0.8; }
+  94%       { opacity: 1; }
+  96%       { opacity: 0.9; }
+  97%       { opacity: 1; }
 }
 
-.btn--primary {
-  background: var(--color-purple);
-  color: #fff;
+@keyframes slide-up {
+  from { transform: translateY(20px); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
 }
 
-.btn--primary:hover {
-  opacity: 0.88;
+@keyframes slide-in-right {
+  from { transform: translateX(40px); opacity: 0; }
+  to   { transform: translateX(0);    opacity: 1; }
 }
 
-.btn--secondary {
-  background: transparent;
-  border: 0.5px solid var(--color-purple);
-  color: var(--color-purple);
-}
-
-.btn--secondary:hover {
-  background: rgba(127, 119, 221, 0.1);
-}
-
-.btn--ghost {
-  background: transparent;
-  color: var(--color-text-muted);
-  font-size: 13px;
-}
-
-.btn--ghost:hover {
-  color: var(--color-text);
-}
-
-/* ── dApp-kit connect button override ─────────────────────────────────────── */
-[data-dapp-kit] button {
-  background: var(--color-purple) !important;
-  border-radius: 8px !important;
-  font-family: inherit !important;
-  font-size: 15px !important;
-  font-weight: 500 !important;
-  padding: 12px 24px !important;
-  color: #fff !important;
-  border: none !important;
+@keyframes count-up {
+  from { opacity: 0; transform: scale(0.8); }
+  to   { opacity: 1; transform: scale(1); }
 }

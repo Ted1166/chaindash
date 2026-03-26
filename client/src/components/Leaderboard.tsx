@@ -1,112 +1,165 @@
-import { useSuiClient } from '@mysten/dapp-kit'
-import { useEffect, useState } from 'react'
-import { fetchLeaderboard, type LeaderboardEntry } from '../chain/contracts'
+import { useEffect, useState, useCallback } from 'react'
+
+const RPC_URL        = 'https://fullnode.testnet.sui.io:443'
+const LEADERBOARD_ID = '0x12f885c41f3dfedbda92b8f50b4d964f45915f163a5c933169a5810c5485a8d4'
+const REFRESH_MS     = 30_000
+
+interface Entry {
+  rank:         number
+  player:       string
+  score:        number
+  aiDifficulty: number
+}
 
 interface Props {
+  wallet: string | null
   onBack: () => void
 }
 
-export default function Leaderboard({ onBack }: Props) {
-  const client = useSuiClient()
-  const [entries, setEntries] = useState<LeaderboardEntry[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+async function fetchOnChain(): Promise<{ entries: Entry[]; totalGames: number }> {
+  const res = await fetch(RPC_URL, {
+    method:  'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      jsonrpc: '2.0',
+      id:      1,
+      method:  'sui_getObject',
+      params:  [LEADERBOARD_ID, { showContent: true }],
+    }),
+  })
+  const json = await res.json()
+  const fields = json?.result?.data?.content?.fields
+  if (!fields) throw new Error('Object not found or empty — check LEADERBOARD_ID')
 
-  useEffect(() => {
-    fetchLeaderboard(client)
-      .then(setEntries)
-      .catch(() => setError('Could not load leaderboard'))
-      .finally(() => setLoading(false))
-  }, [client])
+  const totalGames = Number(fields.total_games ?? 0)
+  const entries: Entry[] = (fields.entries ?? [])
+    .map((e: any) => ({
+      player:       e.fields?.player ?? '0x???',
+      score:        Number(e.fields?.score ?? 0),
+      aiDifficulty: Number(e.fields?.ai_difficulty ?? 0),
+    }))
+    .sort((a: Entry, b: Entry) => b.score - a.score)
+    .map((e: Entry, i: number) => ({ ...e, rank: i + 1 }))
 
-  return (
-    <div style={{ maxWidth: 480, margin: '0 auto', padding: '2rem 1rem' }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: '1.5rem' }}>
-        <button
-          onClick={onBack}
-          style={{ fontSize: 13, color: 'var(--color-text-secondary)' }}
-        >
-          ← Back
-        </button>
-        <h2 style={{ fontSize: 22, fontWeight: 500, margin: 0 }}>Leaderboard</h2>
-        <span style={{
-          marginLeft: 'auto',
-          fontSize: 11,
-          background: 'var(--color-background-info)',
-          color: 'var(--color-text-info)',
-          padding: '3px 10px',
-          borderRadius: 20,
-        }}>
-          On-chain
-        </span>
-      </div>
-
-      {loading && (
-        <div style={{ textAlign: 'center', padding: '3rem', color: 'var(--color-text-secondary)' }}>
-          Loading…
-        </div>
-      )}
-
-      {error && (
-        <div style={{ color: 'var(--color-text-danger)', fontSize: 14 }}>{error}</div>
-      )}
-
-      {!loading && !error && entries.length === 0 && (
-        <div style={{ textAlign: 'center', padding: '3rem', color: 'var(--color-text-secondary)' }}>
-          No scores yet — be the first!
-        </div>
-      )}
-
-      {!loading && entries.map((entry, i) => (
-        <LeaderboardRow key={entry.player} rank={i + 1} entry={entry} />
-      ))}
-    </div>
-  )
+  return { entries, totalGames }
 }
 
-function LeaderboardRow({ rank, entry }: { rank: number; entry: LeaderboardEntry }) {
-  const medal = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : null
-  const diffColor = entry.aiDifficulty < 40
-    ? '#1d9e75'
-    : entry.aiDifficulty < 70
-      ? '#ef9f27'
-      : '#e24b4a'
+export default function Leaderboard({ wallet, onBack }: Props) {
+  const [entries,    setEntries]    = useState<Entry[]>([])
+  const [loading,    setLoading]    = useState(true)
+  const [error,      setError]      = useState<string | null>(null)
+  const [totalGames, setTotalGames] = useState(0)
+  const [lastUpdate, setLastUpdate] = useState<Date | null>(null)
+  const [countdown,  setCountdown]  = useState(REFRESH_MS / 1000)
+
+  const refresh = useCallback(async () => {
+    setLoading(true)
+    setError(null)
+    try {
+      const { entries, totalGames } = await fetchOnChain()
+      setEntries(entries)
+      setTotalGames(totalGames)
+      setLastUpdate(new Date())
+      setCountdown(REFRESH_MS / 1000)
+    } catch (err: any) {
+      setError(err.message ?? 'Unknown error')
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
+  useEffect(() => { refresh() }, [refresh])
+
+  useEffect(() => {
+    const iv = setInterval(refresh, REFRESH_MS)
+    return () => clearInterval(iv)
+  }, [refresh])
+
+  useEffect(() => {
+    const tick = setInterval(() => {
+      setCountdown(c => c <= 1 ? REFRESH_MS / 1000 : c - 1)
+    }, 1000)
+    return () => clearInterval(tick)
+  }, [])
+
+  function shorten(addr: string) {
+    return addr.length < 12 ? addr : addr.slice(0, 6) + '...' + addr.slice(-4)
+  }
+
+  function diffLabel(d: number) {
+    if (d < 30) return { label: 'EASY',    color: '#00ff88' }
+    if (d < 55) return { label: 'MEDIUM',  color: '#ffaa00' }
+    if (d < 75) return { label: 'HARD',    color: '#ff6633' }
+    return             { label: 'EXTREME', color: '#ff3355' }
+  }
 
   return (
-    <div style={{
-      display: 'flex',
-      alignItems: 'center',
-      gap: 12,
-      padding: '12px 14px',
-      borderRadius: 8,
-      border: '0.5px solid var(--color-border-tertiary)',
-      marginBottom: 8,
-      background: rank <= 3
-        ? 'var(--color-background-secondary)'
-        : 'var(--color-background-primary)',
-    }}>
-      <span style={{
-        fontSize: medal ? 20 : 14,
-        fontWeight: 500,
-        minWidth: 28,
-        color: 'var(--color-text-secondary)',
-      }}>
-        {medal ?? `#${rank}`}
-      </span>
-
-      <div style={{ flex: 1 }}>
-        <div style={{ fontSize: 15, fontWeight: 500 }}>{entry.username}</div>
-        <div style={{ fontSize: 11, fontFamily: 'monospace', color: 'var(--color-text-secondary)' }}>
-          {entry.player.slice(0, 8)}…{entry.player.slice(-4)}
-        </div>
+    <div className="lb-root">
+      <div className="lb-header">
+        <button className="lb-back" onClick={onBack}>← BACK</button>
+        <div className="lb-title">LEADERBOARD</div>
+        <div className="lb-badge">● LIVE</div>
       </div>
 
-      <div style={{ textAlign: 'right' }}>
-        <div style={{ fontSize: 18, fontWeight: 500 }}>{entry.score.toLocaleString()}</div>
-        <div style={{ fontSize: 11, color: diffColor }}>
-          AI {entry.aiDifficulty}/100
-        </div>
+      <div className="lb-meta">
+        {totalGames > 0 && <span>{totalGames.toLocaleString()} GAMES PLAYED</span>}
+        <span style={{ marginLeft: 'auto', opacity: 0.5 }}>
+          {loading ? 'REFRESHING...' : `REFRESH IN ${countdown}s`}
+        </span>
+        <button className="lb-refresh" onClick={refresh} disabled={loading}>↺</button>
       </div>
+
+      {error && (
+        <div className="lb-error">
+          ✗ {error}
+          <br /><br />
+          <button className="lb-back" onClick={refresh}>RETRY</button>
+        </div>
+      )}
+
+      {!error && !loading && entries.length === 0 && (
+        <div className="lb-empty">No scores yet — be the first!</div>
+      )}
+
+      {entries.length > 0 && (
+        <>
+          <div className="lb-col-headers">
+            <span>#</span>
+            <span>PLAYER</span>
+            <span>SCORE</span>
+            <span>DIFFICULTY</span>
+          </div>
+          <div className="lb-table">
+            {entries.map((e, i) => {
+              const tier  = diffLabel(e.aiDifficulty)
+              const isYou = wallet && e.player.toLowerCase() === wallet.toLowerCase()
+              return (
+                <div
+                  className={`lb-row${isYou ? ' lb-row--you' : ''}`}
+                  key={e.player + i}
+                  style={{ animationDelay: `${i * 0.06}s` }}
+                >
+                  <div className="lb-rank">
+                    {i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `#${e.rank}`}
+                  </div>
+                  <div className="lb-player">
+                    {shorten(e.player)}
+                    {isYou && <span className="lb-you-tag">YOU</span>}
+                  </div>
+                  <div className="lb-score">{e.score.toLocaleString()}</div>
+                  <div className="lb-diff" style={{ color: tier.color }}>
+                    {e.aiDifficulty} · {tier.label}
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        </>
+      )}
+
+      {lastUpdate && (
+        <div className="lb-footer">Last updated {lastUpdate.toLocaleTimeString()}</div>
+      )}
     </div>
   )
 }

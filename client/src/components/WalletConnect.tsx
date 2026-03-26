@@ -1,59 +1,40 @@
-import {
-  ConnectButton,
-  useCurrentAccount,
-  useDisconnectWallet,
-} from '@mysten/dapp-kit'
+import { ConnectButton, useCurrentAccount, useDisconnectWallet } from '@onelabs/dapp-kit'
+import { useEffect } from 'react'
 
 interface Props {
-  compact?: boolean
+  wallet:    string | null
+  onConnect: (addr: string) => void
 }
 
-export default function WalletConnect({ compact }: Props) {
+export default function WalletConnect({ wallet, onConnect }: Props) {
   const account = useCurrentAccount()
   const { mutate: disconnect } = useDisconnectWallet()
 
-  if (!account) {
+  // Sync dapp-kit account into App state whenever it changes
+  useEffect(() => {
+    if (account?.address && account.address !== wallet) {
+      onConnect(account.address)
+    }
+  }, [account?.address])
+
+  if (account) {
+    const short = account.address.slice(0, 6) + '...' + account.address.slice(-4)
     return (
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
-        {!compact && (
-          <p style={{ color: 'var(--color-text-secondary)', fontSize: 14, margin: 0 }}>
-            Connect your wallet to play and compete on-chain.
-          </p>
-        )}
-        <ConnectButton connectText="Connect OneWallet" />
+      <div className="wallet-wrap">
+        <div className="wallet-connected">
+          <div className="wallet-dot" />
+          <span className="wallet-addr">{short}</span>
+          <button className="wallet-disconnect" onClick={() => disconnect()}>
+            DISCONNECT
+          </button>
+        </div>
       </div>
     )
   }
 
-  const short = `${account.address.slice(0, 6)}…${account.address.slice(-4)}`
-
-  if (compact) {
-    return (
-      <span style={{ fontSize: 12, color: 'var(--color-text-secondary)' }}>
-        {short}
-      </span>
-    )
-  }
-
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-      <span style={{
-        fontSize: 13,
-        color: 'var(--color-text-secondary)',
-        fontFamily: 'monospace',
-        background: 'var(--color-background-secondary)',
-        padding: '4px 10px',
-        borderRadius: 6,
-        border: '0.5px solid var(--color-border-tertiary)',
-      }}>
-        {short}
-      </span>
-      <button
-        onClick={() => disconnect()}
-        style={{ fontSize: 12, color: 'var(--color-text-secondary)' }}
-      >
-        Disconnect
-      </button>
+    <div className="wallet-wrap">
+      <ConnectButton className="wallet-btn" connectText="◈ CONNECT ONEWALLET" />
     </div>
   )
 }
