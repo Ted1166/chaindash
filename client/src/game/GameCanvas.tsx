@@ -4,6 +4,8 @@ import BootScene  from './scenes/BootScene'
 import GameScene  from './scenes/GameScene'
 import UIScene    from './scenes/UIScene'
 import type { RunResult } from '../App'
+import { useSignAndExecuteTransaction } from '@onelabs/dapp-kit'
+import { buildLeaderboardInsertTransaction, LEADERBOARD_ID } from '../chain/contracts'
 
 interface Props {
   wallet:    string | null
@@ -21,6 +23,7 @@ export default function GameCanvas({ wallet, onRunEnd, onMenu }: Props) {
   const [aiDifficulty, setAiDifficulty] = useState(20)
   const [aiReason, setAiReason] = useState('Warming up...')
   const [aiSpeed,  setAiSpeed]  = useState(1.0)
+  const { mutateAsync: signAndExecute } = useSignAndExecuteTransaction()
 
   useEffect(() => {
     if (!mountRef.current || gameRef.current) return
@@ -60,10 +63,28 @@ export default function GameCanvas({ wallet, onRunEnd, onMenu }: Props) {
         setAiSpeed(spd)
         if (reason) setAiReason(reason)
       }
-      scene.onGameOver    = (result) => {
-        const bestPrev = parseInt(localStorage.getItem('chaindash_best') ?? '0')
+      scene.onGameOver = async (result) => {
+        const bestPrev  = parseInt(localStorage.getItem('chaindash_best') ?? '0')
         const isNewBest = result.score > bestPrev
         if (isNewBest) localStorage.setItem('chaindash_best', String(result.score))
+
+        if (wallet) {
+          try {
+            const tx = buildLeaderboardInsertTransaction({
+              leaderboardId: LEADERBOARD_ID,
+              player:        wallet,
+              username:      wallet.slice(0, 8),
+              score:         result.score,
+              aiDifficulty:  result.aiDifficulty,
+              sessionId:     '0x0000000000000000000000000000000000000000000000000000000000000000',
+            })
+            await signAndExecute({ transaction: tx })
+            console.log('Score submitted on-chain ✓')
+          } catch (err) {
+            console.warn('Chain submission failed (non-critical):', err)
+          }
+        }
+
         onRunEnd({ ...result, isNewBest })
       }
     })

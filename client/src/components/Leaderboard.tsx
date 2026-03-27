@@ -118,7 +118,43 @@ export default function Leaderboard({ wallet, onBack }: Props) {
       )}
 
       {!error && !loading && entries.length === 0 && (
-        <div className="lb-empty">No scores yet — be the first!</div>
+        <>
+          <div className="lb-col-headers">
+            <span>#</span>
+            <span>PLAYER</span>
+            <span>SCORE</span>
+            <span>DIFFICULTY</span>
+          </div>
+          <div className="lb-table">
+            {[
+              { rank: 1, player: '0x61ed...376f', score: 14820, aiDifficulty: 82 },
+              { rank: 2, player: '0xaa23...9f12', score: 11340, aiDifficulty: 71 },
+              { rank: 3, player: '0xbb44...cc01', score:  8760, aiDifficulty: 58 },
+              { rank: 4, player: '0xdd55...ee22', score:  6200, aiDifficulty: 45 },
+              { rank: 5, player: '0xff66...aa33', score:  4480, aiDifficulty: 33 },
+            ].map((e, i) => {
+              const tier = e.aiDifficulty >= 75 ? { label: 'EXTREME', color: '#ff3355' }
+                        : e.aiDifficulty >= 55 ? { label: 'HARD',    color: '#ff6633' }
+                        : e.aiDifficulty >= 30 ? { label: 'MEDIUM',  color: '#ffaa00' }
+                        :                        { label: 'EASY',    color: '#00ff88' }
+              return (
+                <div className="lb-row" key={i} style={{ animationDelay: `${i * 0.06}s` }}>
+                  <div className="lb-rank">
+                    {i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `#${e.rank}`}
+                  </div>
+                  <div className="lb-player">{e.player}</div>
+                  <div className="lb-score">{e.score.toLocaleString()}</div>
+                  <div className="lb-diff" style={{ color: tier.color }}>
+                    {e.aiDifficulty} · {tier.label}
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+          <div className="lb-footer" style={{ color: 'var(--text-3)', fontStyle: 'italic' }}>
+            DEMO DATA — play to add your score
+          </div>
+        </>
       )}
 
       {entries.length > 0 && (

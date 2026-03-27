@@ -28,7 +28,6 @@ export default function App() {
   const [lastRun,   setLastRun]   = useState<RunResult | null>(null)
   const [bestScore, setBestScore] = useState<number>(0)
 
-  // Generate a guest ID once per session so guests can still play
   useEffect(() => {
     const stored = sessionStorage.getItem('chaindash_guest_id')
     if (stored) {
@@ -88,16 +87,12 @@ export default function App() {
       )}
 
       {screen === 'leaderboard' && (
-        <Leaderboard
-          wallet={wallet}
-          onBack={() => setScreen('menu')}
-        />
+        <Leaderboard wallet={wallet} onBack={() => setScreen('menu')} />
       )}
     </div>
   )
 }
 
-// ── Menu Screen ───────────────────────────────────────────────────────────────
 interface MenuProps {
   wallet:        string | null
   isGuest:       boolean
