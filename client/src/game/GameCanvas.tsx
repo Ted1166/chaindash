@@ -19,6 +19,8 @@ export default function GameCanvas({ wallet, onRunEnd, onMenu }: Props) {
   const [score,        setScore]        = useState(0)
   const [tokens,       setTokens]       = useState(0)
   const [aiDifficulty, setAiDifficulty] = useState(20)
+  const [aiReason, setAiReason] = useState('Warming up...')
+  const [aiSpeed,  setAiSpeed]  = useState(1.0)
 
   useEffect(() => {
     if (!mountRef.current || gameRef.current) return
@@ -53,7 +55,11 @@ export default function GameCanvas({ wallet, onRunEnd, onMenu }: Props) {
 
       scene.onScoreUpdate = setScore
       scene.onTokenUpdate = setTokens
-      scene.onAIUpdate    = (d) => setAiDifficulty(d)
+      scene.onAIUpdate = (d, spd, _gap, reason) => {
+        setAiDifficulty(d)
+        setAiSpeed(spd)
+        if (reason) setAiReason(reason)
+      }
       scene.onGameOver    = (result) => {
         const bestPrev = parseInt(localStorage.getItem('chaindash_best') ?? '0')
         const isNewBest = result.score > bestPrev
@@ -67,8 +73,6 @@ export default function GameCanvas({ wallet, onRunEnd, onMenu }: Props) {
       gameRef.current = null
     }
   }, [])
-
-  const aiPct = `${aiDifficulty}%`
 
   return (
     <div className="game-wrap">
@@ -90,8 +94,30 @@ export default function GameCanvas({ wallet, onRunEnd, onMenu }: Props) {
         <div className="hud-right">
           <div className="hud-ai-label">AI DIFFICULTY · {aiDifficulty}</div>
           <div className="hud-ai-bar-track">
-            <div className="hud-ai-bar-fill" style={{ width: aiPct }} />
+            <div
+              className="hud-ai-bar-fill"
+              style={{
+                width: `${aiDifficulty}%`,
+                background: aiDifficulty < 30 ? '#00ff88'
+                          : aiDifficulty < 55 ? '#ffaa00'
+                          : aiDifficulty < 75 ? '#ff6633'
+                          : '#ff3355',
+              }}
+            />
           </div>
+          <div className="hud-ai-tier" style={{
+            color: aiDifficulty < 30 ? '#00ff88'
+                : aiDifficulty < 55 ? '#ffaa00'
+                : aiDifficulty < 75 ? '#ff6633'
+                : '#ff3355',
+          }}>
+            {aiDifficulty < 30 ? 'EASY'
+            : aiDifficulty < 55 ? 'MEDIUM'
+            : aiDifficulty < 75 ? 'HARD'
+            : 'EXTREME'}
+            {' '}· SPEED {aiSpeed.toFixed(2)}x
+          </div>
+          <div className="hud-ai-reason">{aiReason}</div>
         </div>
       </div>
 

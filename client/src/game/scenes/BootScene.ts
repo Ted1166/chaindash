@@ -6,13 +6,11 @@ export default class BootScene extends Phaser.Scene {
   preload() {
     const { width, height } = this.scale
     const bar = this.add.graphics()
-
     this.load.on('progress', (v: number) => {
       bar.clear()
       bar.fillStyle(0x00c2ff, 1)
       bar.fillRect(width / 2 - 120, height / 2, 240 * v, 4)
     })
-
     this.generateTextures()
   }
 
@@ -22,7 +20,6 @@ export default class BootScene extends Phaser.Scene {
     player.fillRoundedRect(0, 0, 32, 40, 6)
     player.fillStyle(0x00c2ff)
     player.fillRoundedRect(6, 8, 20, 12, 3)
-
     player.fillStyle(0xffffff, 0.4)
     player.fillRoundedRect(8, 10, 8, 4, 2)
     player.fillStyle(0x3a5fa8)
@@ -52,13 +49,8 @@ export default class BootScene extends Phaser.Scene {
     spike.fillRect(2, 2, 10, 52)
     spike.fillStyle(0xff0033)
     spike.fillRect(0, 0, 28, 4)
-    
-    const spikeText = this.add.text(14, 28, '⚡', {
-      fontSize: '18px', color: '#ffff00'
-    }).setOrigin(0.5).setVisible(false)
     spike.generateTexture('obstacle_spike', 28, 56)
     spike.destroy()
-    spikeText.destroy()
 
     const rug = this.make.graphics({ x: 0, y: 0 })
     rug.fillStyle(0xff8800)
@@ -77,6 +69,39 @@ export default class BootScene extends Phaser.Scene {
     fork.fillRect(15, 2, 5, 44)
     fork.generateTexture('obstacle_fork', 40, 48)
     fork.destroy()
+
+    const overhead = this.make.graphics({ x: 0, y: 0 })
+    overhead.fillStyle(0x00c2ff)
+    overhead.fillRect(0, 0, 80, 12)
+    overhead.fillStyle(0x0088bb)
+    overhead.fillRect(0, 12, 80, 4)
+    overhead.fillStyle(0x00ddff)
+    for (let i = 0; i < 5; i++) {
+      const sx = 6 + i * 16
+      overhead.fillTriangle(sx, 16, sx + 8, 16, sx + 4, 36)
+    }
+    overhead.fillStyle(0x00ffff, 0.3)
+    overhead.fillRect(2, 2, 76, 4)
+    overhead.generateTexture('obstacle_overhead', 80, 36)
+    overhead.destroy()
+
+    const node = this.make.graphics({ x: 0, y: 0 })
+    node.fillStyle(0x00ff88)
+    node.fillCircle(20, 20, 20)
+    node.fillStyle(0x00cc66)
+    node.fillCircle(20, 20, 14)
+    node.fillStyle(0x00ff88)
+    node.fillCircle(20, 20, 7)
+    node.generateTexture('obstacle_node', 40, 40)
+    node.destroy()
+
+    const wall = this.make.graphics({ x: 0, y: 0 })
+    wall.fillStyle(0xff3355)
+    wall.fillRect(0, 0, 20, 90)
+    wall.fillStyle(0xff6677, 0.4)
+    wall.fillRect(2, 0, 6, 90)
+    wall.generateTexture('obstacle_wall', 20, 90)
+    wall.destroy()
 
     const token = this.make.graphics({ x: 0, y: 0 })
     token.fillStyle(0xffaa00)
