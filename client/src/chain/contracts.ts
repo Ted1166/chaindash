@@ -3,7 +3,7 @@ export const LEADERBOARD_ID = import.meta.env.VITE_LEADERBOARD_ID ?? '0x12f885c4
 export const PRIZE_POOL_ID  = import.meta.env.VITE_PRIZE_POOL_ID  ?? '0x23c8d639615adcee821dc13f7ef31e7037e65b460955d509705e2783e3eeed8e'
 export const NETWORK        = import.meta.env.VITE_NETWORK         ?? 'testnet'
 
-import { Transaction } from '@onelabs/sui/transactions'
+import { Transaction } from '@mysten/sui/transactions'
 
 export function buildSubmitScoreTransaction(params: {
   profileId:       string

@@ -4,7 +4,7 @@ import BootScene  from './scenes/BootScene'
 import GameScene  from './scenes/GameScene'
 import UIScene    from './scenes/UIScene'
 import type { RunResult } from '../App'
-import { useSignAndExecuteTransaction } from '@onelabs/dapp-kit'
+import { useSignAndExecuteTransaction } from '@mysten/dapp-kit'
 import { buildLeaderboardInsertTransaction, LEADERBOARD_ID } from '../chain/contracts'
 
 interface Props {

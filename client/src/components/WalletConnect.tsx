@@ -1,4 +1,4 @@
-import { ConnectButton, useCurrentAccount, useDisconnectWallet } from '@onelabs/dapp-kit'
+import { ConnectButton, useCurrentAccount, useDisconnectWallet } from '@mysten/dapp-kit'
 import { useEffect } from 'react'
 
 interface Props {
@@ -10,7 +10,6 @@ export default function WalletConnect({ wallet, onConnect }: Props) {
   const account = useCurrentAccount()
   const { mutate: disconnect } = useDisconnectWallet()
 
-  // Sync dapp-kit account into App state whenever it changes
   useEffect(() => {
     if (account?.address && account.address !== wallet) {
       onConnect(account.address)
